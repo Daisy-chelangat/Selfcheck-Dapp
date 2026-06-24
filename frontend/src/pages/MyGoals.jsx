@@ -2,6 +2,7 @@ import { useState } from "react";
 import styled from "styled-components";
 import GoalCard from "../components/GoalCard";
 import PartnerInvite from "../components/PartnerInvite";
+import { Link } from "react-router-dom";
 
 const Container = styled.div`
   max-width: 1200px;
@@ -173,11 +174,28 @@ const MyGoals = ({
       {activeTab === "failed" && renderGoals(failedGoals)}
       {activeTab === "partner" && (
         <div>
-          {partnerGoals.length === 0 ? (
-            <EmptyState>
-              <EmptyIcon>🤝</EmptyIcon>
-              <p>No partner goals yet. Invite a friend to get started!</p>
-            </EmptyState>
+            {partnerGoals.length === 0 ? (
+  <EmptyState>
+    <EmptyIcon>🤝</EmptyIcon>
+    <p style={{ marginBottom: "20px" }}>
+      No partner goals yet. Invite a friend to get started!
+    </p>
+    <Link
+      to="/create"
+      style={{
+        padding: "12px 24px",
+        borderRadius: "12px",
+        fontSize: "0.9rem",
+        fontWeight: "700",
+        background: "linear-gradient(135deg, #6366f1, #4f46e5)",
+        color: "white",
+        display: "inline-block",
+        transition: "all 0.2s ease",
+      }}
+    >
+      🤝 Create Partner Goal
+    </Link>
+  </EmptyState>
           ) : (
             <GoalsGrid>
               {partnerGoals.map((goal, index) => (

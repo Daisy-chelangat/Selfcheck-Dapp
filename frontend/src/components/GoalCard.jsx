@@ -149,17 +149,21 @@ const GoalCard = ({
       </InfoGrid>
 
       {isActive && (
-        <CheckInButton
-          goalId={Number(goal.id)}
-          isExpired={isExpired}
-          isLoading={isLoading}
-          checkInCount={Number(goal.checkInCount)}
-          requiredCheckIns={Number(goal.requiredCheckIns)}
-          handleCheckIn={handleCheckIn}
-          handleCompleteGoal={handleCompleteGoal}
-          handleFailGoal={handleFailGoal}
-        />
-      )}
+  <CheckInButton
+    goalId={Number(goal.id)}
+    isExpired={isExpired}
+    isLoading={isLoading}
+    checkInCount={Number(goal.checkInCount)}
+    requiredCheckIns={Number(goal.requiredCheckIns)}
+    lastCheckIn={Number(goal.lastCheckIn)}
+    frequency={Number(goal.frequency)}
+    isPartnerGoal={goal.isPartnerGoal}
+    hasPendingRequest={false}
+    handleCheckIn={handleCheckIn}
+    handleCompleteGoal={handleCompleteGoal}
+    handleFailGoal={handleFailGoal}
+  />
+)}
     </Card>
   );
 };

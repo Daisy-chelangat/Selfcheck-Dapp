@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import styled from "styled-components";
 
 const ButtonGroup = styled.div`
@@ -54,16 +55,94 @@ const Fail = styled(Button)`
   }
 `;
 
+const WaitingBox = styled.div`
+  width: 100%;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: #0f0f0f;
+  border: 1px solid #2d2d5e;
+  color: #94a3b8;
+  text-align: center;
+`;
+
+const PendingBox = styled.div`
+  width: 100%;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: #1e1b4b;
+  border: 1px solid #6366f1;
+  color: #6366f1;
+  text-align: center;
+`;
+
+const getFrequencySeconds = (frequency) => {
+  if (frequency === 0) return 86400;      // 1 day
+  if (frequency === 1) return 172800;     // 2 days
+  return 604800;                          // 7 days
+};
+
+const formatTimeLeft = (seconds) => {
+  if (seconds <= 0) return "now";
+  const days = Math.floor(seconds / 86400);
+  const hours = Math.floor((seconds % 86400) / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+
+  if (days > 0) return `${days}d ${hours}h ${minutes}m`;
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  return `${minutes}m`;
+};
+
 const CheckInButton = ({
   goalId,
   isExpired,
   isLoading,
   checkInCount,
   requiredCheckIns,
+  lastCheckIn,
+  frequency,
+  isPartnerGoal,
+  hasPendingRequest,
   handleCheckIn,
   handleCompleteGoal,
   handleFailGoal,
 }) => {
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [canCheckIn, setCanCheckIn] = useState(false);
+
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const now = Math.floor(Date.now() / 1000);
+      const frequencySeconds = getFrequencySeconds(frequency);
+
+      if (!lastCheckIn || lastCheckIn === 0) {
+        setCanCheckIn(true);
+        setTimeLeft(0);
+        return;
+      }
+
+      const nextCheckIn = Number(lastCheckIn) + frequencySeconds;
+      const diff = nextCheckIn - now;
+
+      if (diff <= 0) {
+        setCanCheckIn(true);
+        setTimeLeft(0);
+      } else {
+        setCanCheckIn(false);
+        setTimeLeft(diff);
+      }
+    };
+
+    calculateTimeLeft();
+
+    // update every minute
+    const interval = setInterval(calculateTimeLeft, 60000);
+    return () => clearInterval(interval);
+  }, [lastCheckIn, frequency]);
+
   const minRequired = Math.floor(requiredCheckIns * 0.8);
   const canComplete = isExpired && checkInCount >= minRequired;
   const canFail = isExpired && checkInCount < minRequired;
@@ -71,12 +150,24 @@ const CheckInButton = ({
   return (
     <ButtonGroup>
       {!isExpired && (
-        <CheckIn
-          onClick={() => handleCheckIn(goalId)}
-          disabled={isLoading}
-        >
-          {isLoading ? "Processing..." : "✓ Check In"}
-        </CheckIn>
+        <>
+          {isPartnerGoal && hasPendingRequest ? (
+            <PendingBox>
+              ⏳ Awaiting partner approval...
+            </PendingBox>
+          ) : canCheckIn ? (
+            <CheckIn
+              onClick={() => handleCheckIn(goalId)}
+              disabled={isLoading}
+            >
+              {isLoading ? "Processing..." : "✓ Check In"}
+            </CheckIn>
+          ) : (
+            <WaitingBox>
+              ⏳ Next check-in in {formatTimeLeft(timeLeft)}
+            </WaitingBox>
+          )}
+        </>
       )}
 
       {canComplete && (

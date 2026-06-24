@@ -37,6 +37,15 @@ contract SelfCheck {
         bool partnerCompleted;
     }
 
+    struct CheckInRequest {
+        uint goalId;
+        address requester;
+        uint timestamp;
+        bool approved;
+        bool rejected;
+        bool pending;
+    }
+
     // ─── STATE VARIABLES ─────────────────────────────
 
     address public owner;
@@ -49,6 +58,9 @@ contract SelfCheck {
     mapping(address => uint[]) public userGoals;
     mapping(uint => PartnerGoal) public partnerGoals;
     mapping(address => uint) public successCount;
+    mapping(uint => CheckInRequest) public checkInRequests;
+    mapping(uint => uint) public pendingCheckInGoalId;
+    mapping(uint => uint) public goalToPartnerGoalId;
 
     // ─── EVENTS ──────────────────────────────────────
 
@@ -98,6 +110,24 @@ contract SelfCheck {
 
     event PoolDistributed(
         uint totalAmount,
+        uint timestamp
+    );
+
+    event CheckInRequested(
+        uint indexed goalId,
+        address indexed requester,
+        uint timestamp
+    );
+
+    event CheckInApproved(
+        uint indexed goalId,
+        address indexed partner,
+        uint timestamp
+    );
+
+    event CheckInRejected(
+        uint indexed goalId,
+        address indexed partner,
         uint timestamp
     );
 
@@ -204,7 +234,7 @@ contract SelfCheck {
         goalCounter++;
     }
 
-    function checkIn(uint goalId)
+   function checkIn(uint goalId)
         external
         goalExists(goalId)
         onlyGoalOwner(goalId)
@@ -223,10 +253,102 @@ contract SelfCheck {
             );
         }
 
-        goal.lastCheckIn = block.timestamp;
+        // if partner goal → create a pending request instead
+        if (goal.isPartnerGoal) {
+            require(
+                !checkInRequests[goalId].pending,
+                "Check-in request already pending"
+            );
+
+            checkInRequests[goalId] = CheckInRequest({
+                goalId: goalId,
+                requester: msg.sender,
+                timestamp: block.timestamp,
+                approved: false,
+                rejected: false,
+                pending: true
+            });
+
+            emit CheckInRequested(goalId, msg.sender, block.timestamp);
+        } else {
+            // solo goal → record immediately
+            goal.lastCheckIn = block.timestamp;
+            goal.checkInCount++;
+
+            emit CheckedIn(goalId, msg.sender, block.timestamp, goal.checkInCount);
+        }
+    }
+
+    function approveCheckIn(uint goalId) external goalExists(goalId) isActive(goalId) {
+        Goal storage goal = goals[goalId];
+        CheckInRequest storage request = checkInRequests[goalId];
+
+        require(request.pending, "No pending check-in request");
+        require(!request.approved && !request.rejected, "Request already resolved");
+
+        uint pgId = goalToPartnerGoalId[goalId];
+        PartnerGoal storage pg = partnerGoals[pgId];
+
+        require(
+            msg.sender == pg.partner || msg.sender == pg.initiator,
+            "Not a partner on this goal"
+        );
+        require(msg.sender != request.requester, "Cannot approve your own check-in");
+
+        request.approved = true;
+        request.pending = false;
+
+        goal.lastCheckIn = request.timestamp;
         goal.checkInCount++;
 
-        emit CheckedIn(goalId, msg.sender, block.timestamp, goal.checkInCount);
+        emit CheckInApproved(goalId, msg.sender, block.timestamp);
+        emit CheckedIn(goalId, request.requester, request.timestamp, goal.checkInCount);
+    }
+
+    function rejectCheckIn(uint goalId) external goalExists(goalId) isActive(goalId) {
+        CheckInRequest storage request = checkInRequests[goalId];
+
+        require(request.pending, "No pending check-in request");
+        require(!request.approved && !request.rejected, "Request already resolved");
+
+        uint pgId = goalToPartnerGoalId[goalId];
+        PartnerGoal storage pg = partnerGoals[pgId];
+
+        require(
+            msg.sender == pg.partner || msg.sender == pg.initiator,
+            "Not a partner on this goal"
+        );
+        require(msg.sender != request.requester, "Cannot reject your own check-in");
+
+        request.rejected = true;
+        request.pending = false;
+
+        emit CheckInRejected(goalId, msg.sender, block.timestamp);
+    }
+
+    function autoApproveCheckIn(uint goalId) external goalExists(goalId) isActive(goalId) {
+        Goal storage goal = goals[goalId];
+        CheckInRequest storage request = checkInRequests[goalId];
+
+        require(request.pending, "No pending check-in request");
+        require(!request.approved && !request.rejected, "Request already resolved");
+        require(
+            block.timestamp >= request.timestamp + 24 hours,
+            "Must wait 24 hours for auto-approve"
+        );
+
+        request.approved = true;
+        request.pending = false;
+
+        goal.lastCheckIn = request.timestamp;
+        goal.checkInCount++;
+
+        emit CheckInApproved(goalId, address(0), block.timestamp);
+        emit CheckedIn(goalId, request.requester, request.timestamp, goal.checkInCount);
+    }
+
+    function getCheckInRequest(uint goalId) external view returns (CheckInRequest memory) {
+        return checkInRequests[goalId];
     }
 
     function completeGoal(uint goalId)
@@ -333,7 +455,8 @@ contract SelfCheck {
         userGoals[msg.sender].push(goalCounter);
 
         emit PartnerGoalCreated(partnerGoalCounter, msg.sender, partner);
-
+        
+        goalToPartnerGoalId[goalCounter] = partnerGoalCounter;
         goalCounter++;
         partnerGoalCounter++;
     }

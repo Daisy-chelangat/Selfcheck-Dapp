@@ -1,4 +1,4 @@
-export const CONTRACT_ADDRESS = "0xA696B498b7379caea0b2C92344b551F10C10b3f7";
+export const CONTRACT_ADDRESS = "0x2057C368aE4b1dF5322b8c0d1cCC53Ad3A0A151B";
 
 export const CONTRACT_ABI = [
   "function createSoloGoal(string memory description, uint durationInDays, uint8 frequency) external payable",
@@ -18,8 +18,13 @@ export const CONTRACT_ABI = [
   "function getSuccessCount(address user) external view returns (uint)",
   "function goalCounter() external view returns (uint)",
   "function communityPool() external view returns (uint)",
+  "function approveCheckIn(uint goalId) external",
+  "function rejectCheckIn(uint goalId) external",
+  "function autoApproveCheckIn(uint goalId) external",
+  "function getCheckInRequest(uint goalId) external view returns (tuple(uint goalId, address requester, uint timestamp, bool approved, bool rejected, bool pending))",
   "event GoalCreated(uint indexed goalId, address indexed owner, string description, uint stake, uint deadline)",
   "event CheckedIn(uint indexed goalId, address indexed owner, uint timestamp, uint checkInCount)",
   "event GoalCompleted(uint indexed goalId, address indexed owner, uint stakeReturned)",
   "event GoalFailed(uint indexed goalId, address indexed owner, uint stakeLost)",
+  
 ];

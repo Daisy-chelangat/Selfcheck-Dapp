@@ -1,0 +1,25 @@
+export const CONTRACT_ADDRESS = "0xA696B498b7379caea0b2C92344b551F10C10b3f7";
+
+export const CONTRACT_ABI = [
+  "function createSoloGoal(string memory description, uint durationInDays, uint8 frequency) external payable",
+  "function checkIn(uint goalId) external",
+  "function completeGoal(uint goalId) external",
+  "function failGoal(uint goalId) external",
+  "function createPartnerGoal(string memory description, uint durationInDays, uint8 frequency, address partner) external payable",
+  "function acceptPartnerGoal(uint partnerGoalId) external payable",
+  "function resolvePartnerGoal(uint partnerGoalId) external",
+  "function distributePool() external",
+  "function withdrawTreasury() external",
+  "function getGoal(uint goalId) external view returns (tuple(uint id, address owner, string description, uint stake, uint deadline, uint createdAt, uint lastCheckIn, uint checkInCount, uint requiredCheckIns, uint8 frequency, uint8 status, bool isPartnerGoal))",
+  "function getUserGoals(address user) external view returns (uint[])",
+  "function getPartnerGoal(uint partnerGoalId) external view returns (tuple(uint goalId, address initiator, address partner, uint initiatorStake, uint partnerStake, bool partnerAccepted, bool initiatorCompleted, bool partnerCompleted))",
+  "function getPoolBalance() external view returns (uint)",
+  "function getTreasuryBalance() external view returns (uint)",
+  "function getSuccessCount(address user) external view returns (uint)",
+  "function goalCounter() external view returns (uint)",
+  "function communityPool() external view returns (uint)",
+  "event GoalCreated(uint indexed goalId, address indexed owner, string description, uint stake, uint deadline)",
+  "event CheckedIn(uint indexed goalId, address indexed owner, uint timestamp, uint checkInCount)",
+  "event GoalCompleted(uint indexed goalId, address indexed owner, uint stakeReturned)",
+  "event GoalFailed(uint indexed goalId, address indexed owner, uint stakeLost)",
+];

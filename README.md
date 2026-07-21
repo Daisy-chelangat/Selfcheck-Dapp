@@ -26,8 +26,12 @@ You set a personal goal, stake ETH as your commitment, and check in regularly to
 - ✅ **Partner Check-in Verification** — In partner mode, your partner must approve each check-in
 - ⏳ **Auto-approve** — If partner ignores a check-in request for 24hrs, it auto-approves
 - 🔥 **Flexible Check-in Frequency** — Daily, every 2 days, or weekly
+- 📂 **Goal Categories** — Learning, Fitness, Health, Reading, Finance, Prayer, Personal Development, Other
+- 🔥 **Streak Counter** — Tracks consecutive check-ins to gamify consistency
+- 📜 **Check-in History** — Every check-in recorded on-chain permanently
 - 🏆 **Community Pool** — Failed stakes (95%) go to a shared pool rewarding successful users
 - 📊 **Progress Tracking** — Visual progress bars and countdowns for every goal
+- ⏰ **Smart Check-in UX** — Button shows countdown to next window after checking in
 - 🏅 **Leaderboard** — Top performers ranked by goals completed
 - ⛓️ **100% On-Chain** — All progress recorded immutably on Ethereum
 
@@ -55,7 +59,7 @@ You set a personal goal, stake ETH as your commitment, and check in regularly to
 | Detail | Value |
 |--------|-------|
 | Network | Ethereum Sepolia Testnet |
-| Contract Address | `0x2057C368aE4b1dF5322b8c0d1cCC53Ad3A0A151B` |
+| Contract Address | `0x81b04b97119895dA01064EeD6BEDA6052B9c5F46` |
 | Solidity Version | 0.8.28 |
 | License | MIT |
 
@@ -265,6 +269,36 @@ selfcheck/
 
 ---
 
+### Contract Functions
+
+**Solo Mode**
+- `createSoloGoal(description, durationInDays, frequency, category)` — Create a goal and stake ETH
+- `checkIn(goalId)` — Record a check-in on-chain
+- `completeGoal(goalId)` — Claim stake back after successful completion
+- `failGoal(goalId)` — Mark goal as failed, stake goes to community pool
+
+**Partner Mode**
+- `createPartnerGoal(description, durationInDays, frequency, category, partner)` — Create a goal and invite a partner
+- `acceptPartnerGoal(partnerGoalId)` — Partner joins and matches the stake
+- `approveCheckIn(goalId)` — Partner approves a pending check-in request
+- `rejectCheckIn(goalId)` — Partner rejects a pending check-in request
+- `autoApproveCheckIn(goalId)` — Auto-approve after 24hrs of no partner response
+- `resolvePartnerGoal(partnerGoalId)` — Settle the goal after deadline
+
+**Pool**
+- `distributePool()` — Distribute community pool to winners (owner only)
+- `withdrawTreasury()` — Withdraw platform treasury (owner only)
+
+**View Functions**
+- `getGoal(goalId)` — Fetch full goal data
+- `getUserGoals(address)` — Fetch all goal IDs for a user
+- `getPartnerGoal(partnerGoalId)` — Fetch partner goal data
+- `getCheckInHistory(goalId)` — Fetch full check-in timestamp history
+- `getCheckInRequest(goalId)` — Fetch pending check-in request
+- `getPoolBalance()` — Fetch community pool balance
+- `getSuccessCount(address)` — Fetch total goals completed by user
+- `getGoalCounter()` — Fetch total goals ever created
+
 ## 🎨 Design Decisions
 
 **Why ETH staking?**
@@ -283,6 +317,33 @@ Partner mode adds a social layer — a real person confirms your check-ins. This
 Life happens. A strict 100% requirement is unrealistic. 80% allows for missed days while still demanding genuine commitment.
 
 ---
+## 🗺 Roadmap
+
+### ✅ V1 — Core (Shipped)
+- Solo mode with ETH staking
+- Partner mode with mutual accountability
+- Community pool distribution
+- Leaderboard
+
+### ✅ V2 — Gamification (Shipped)
+- Goal categories
+- Check-in history on-chain
+- Streak counter
+- Partner check-in verification
+- Smart check-in UX with countdown
+
+### 🔜 V3 — Proof + Rewards (Coming)
+- IPFS proof of completion
+- NFT achievement badges
+- Community challenges
+- Penalty options (donate, roll over)
+
+### 🔜 V4 — Platform (Coming)
+- Reputation score (Soulbound Token)
+- DAO governance
+- AI accountability coach
+- Multi-chain support
+- Mobile app
 
 ## 👩‍💻 Author
 

@@ -1,10 +1,12 @@
 import styled from "styled-components";
 import {
   formatEth,
-  formatDate,
   formatCountdown,
   getGoalStatus,
   getFrequencyLabel,
+  getCategoryLabel,
+  calculateStreak,
+  getFrequencySeconds,
   calculateProgress,
 } from "../utils/helpers";
 import ProgressBar from "./ProgressBar";
@@ -36,7 +38,7 @@ const CardHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 `;
 
 const Description = styled.h3`
@@ -64,6 +66,33 @@ const StatusBadge = styled.div`
     return "#6366f1";
   }};
   white-space: nowrap;
+`;
+
+const TagRow = styled.div`
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+`;
+
+const Tag = styled.div`
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: #0f0f0f;
+  color: #94a3b8;
+  border: 1px solid #2d2d5e;
+`;
+
+const StreakBadge = styled.div`
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: #1a1a0a;
+  color: #f59e0b;
+  border: 1px solid #f59e0b;
 `;
 
 const InfoGrid = styled.div`
@@ -113,6 +142,9 @@ const GoalCard = ({
   const isActive = status === "Active";
   const now = Math.floor(Date.now() / 1000);
   const isExpired = Number(goal.deadline) < now;
+  const frequencySeconds = getFrequencySeconds(Number(goal.frequency));
+  const streak = calculateStreak(goal.checkInHistory || [], frequencySeconds);
+  const categoryLabel = getCategoryLabel(Number(goal.category));
 
   return (
     <Card $status={status}>
@@ -121,9 +153,15 @@ const GoalCard = ({
         <StatusBadge $status={status}>{status}</StatusBadge>
       </CardHeader>
 
-      {goal.isPartnerGoal && (
-        <PartnerBadge>🤝 Partner Goal</PartnerBadge>
-      )}
+      <TagRow>
+        <Tag>{categoryLabel}</Tag>
+        {streak > 0 && (
+          <StreakBadge>🔥 {streak} streak</StreakBadge>
+        )}
+        {goal.isPartnerGoal && (
+          <PartnerBadge>🤝 Partner</PartnerBadge>
+        )}
+      </TagRow>
 
       <ProgressBar progress={progress} status={status} />
 
@@ -149,21 +187,21 @@ const GoalCard = ({
       </InfoGrid>
 
       {isActive && (
-  <CheckInButton
-    goalId={Number(goal.id)}
-    isExpired={isExpired}
-    isLoading={isLoading}
-    checkInCount={Number(goal.checkInCount)}
-    requiredCheckIns={Number(goal.requiredCheckIns)}
-    lastCheckIn={Number(goal.lastCheckIn)}
-    frequency={Number(goal.frequency)}
-    isPartnerGoal={goal.isPartnerGoal}
-    hasPendingRequest={false}
-    handleCheckIn={handleCheckIn}
-    handleCompleteGoal={handleCompleteGoal}
-    handleFailGoal={handleFailGoal}
-  />
-)}
+        <CheckInButton
+          goalId={Number(goal.id)}
+          isExpired={isExpired}
+          isLoading={isLoading}
+          checkInCount={Number(goal.checkInCount)}
+          requiredCheckIns={Number(goal.requiredCheckIns)}
+          lastCheckIn={Number(goal.lastCheckIn)}
+          frequency={Number(goal.frequency)}
+          isPartnerGoal={goal.isPartnerGoal}
+          hasPendingRequest={false}
+          handleCheckIn={handleCheckIn}
+          handleCompleteGoal={handleCompleteGoal}
+          handleFailGoal={handleFailGoal}
+        />
+      )}
     </Card>
   );
 };

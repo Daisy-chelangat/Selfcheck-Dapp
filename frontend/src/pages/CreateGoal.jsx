@@ -185,6 +185,16 @@ const frequencies = [
   { label: "Every 2 Days", value: 1 },
   { label: "Weekly", value: 2 },
 ];
+const categories = [
+  { label: "📚 Learning", value: 0 },
+  { label: "💪 Fitness", value: 1 },
+  { label: "🏥 Health", value: 2 },
+  { label: "📖 Reading", value: 3 },
+  { label: "💰 Finance", value: 4 },
+  { label: "🙏 Prayer", value: 5 },
+  { label: "🌱 Personal Development", value: 6 },
+  { label: "✨ Other", value: 7 },
+];
 
 const CreateGoal = ({
   account,
@@ -200,6 +210,8 @@ const CreateGoal = ({
   const [stake, setStake] = useState("");
   const [partnerAddress, setPartnerAddress] = useState("");
   const [error, setError] = useState("");
+  const [category, setCategory] = useState(0);
+  const [customCategory, setCustomCategory] = useState("");
 
   if (!account) {
     return (
@@ -232,21 +244,26 @@ const CreateGoal = ({
       setError("Please enter your partner's wallet address.");
       return;
     }
+    const finalDescription = category === 7 && customCategory
+  ? `${description} [${customCategory}]`
+  : description;
 
     let success;
 
     if (mode === "solo") {
       success = await handleCreateSoloGoal(
-        description,
+        finaldescription,
         Number(duration),
         frequency,
+        category,
         stake
       );
     } else {
       success = await handleCreatePartnerGoal(
-        description,
+        finaldescription,
         Number(duration),
         frequency,
+        category,
         partnerAddress,
         stake
       );
@@ -314,6 +331,45 @@ const CreateGoal = ({
             ))}
           </FrequencyGrid>
         </FormGroup>
+        <FormGroup>
+  <Label>Goal Category</Label>
+  <div style={{
+    display: "grid",
+    gridTemplateColumns: "repeat(4, 1fr)",
+    gap: "10px",
+  }}>
+    {categories.map((c) => (
+      <button
+        key={c.value}
+        onClick={() => setCategory(c.value)}
+        style={{
+          padding: "10px 8px",
+          borderRadius: "10px",
+          fontSize: "0.8rem",
+          fontWeight: "600",
+          border: `1px solid ${category === c.value ? "#6366f1" : "#2d2d5e"}`,
+          background: category === c.value ? "#1e1b4b" : "transparent",
+          color: category === c.value ? "#6366f1" : "#94a3b8",
+          cursor: "pointer",
+          transition: "all 0.2s ease",
+          textAlign: "center",
+        }}
+      >
+        {c.label}
+      </button>
+    ))}
+  </div>
+
+  {category === 7 && (
+    <Input
+      type="text"
+      placeholder="Describe your category e.g. Music, Art, Coding..."
+      value={customCategory}
+      onChange={(e) => setCustomCategory(e.target.value)}
+      style={{ marginTop: "12px" }}
+    />
+  )}
+</FormGroup>
 
         <FormGroup>
           <Label>Stake Amount (ETH)</Label>

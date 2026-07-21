@@ -19,7 +19,7 @@ const useContract = (signer) => {
     return new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
   };
 
-  const createSoloGoal = async (description, durationInDays, frequency, stakeAmount) => {
+  const createSoloGoal = async (description, durationInDays, frequency,category, stakeAmount) => {
     try {
       setIsLoading(true);
       setError(null);
@@ -28,6 +28,7 @@ const useContract = (signer) => {
         description,
         durationInDays,
         frequency,
+        category,
         { value: ethers.parseEther(stakeAmount) }
       );
       setTxHash(tx.hash);
@@ -92,7 +93,7 @@ const useContract = (signer) => {
     }
   };
 
-  const createPartnerGoal = async (description, durationInDays, frequency, partnerAddress, stakeAmount) => {
+  const createPartnerGoal = async (description, durationInDays, frequency,category, partnerAddress, stakeAmount) => {
     try {
       setIsLoading(true);
       setError(null);
@@ -101,6 +102,7 @@ const useContract = (signer) => {
         description,
         durationInDays,
         frequency,
+        category,
         partnerAddress,
         { value: ethers.parseEther(stakeAmount) }
       );
@@ -217,6 +219,16 @@ const useContract = (signer) => {
       return 0;
     }
   };
+  const getCheckInHistory = async (goalId) => {
+    try {
+      const contract = await getReadContract();
+      const history = await contract.getCheckInHistory(goalId);
+      return history;
+    } catch (err) {
+      setError(err.message || "Failed to fetch check-in history");
+      return [];
+    }
+  };
 
   return {
     isLoading,
@@ -235,6 +247,7 @@ const useContract = (signer) => {
     getPoolBalance,
     getSuccessCount,
     getGoalCounter,
+    getCheckInHistory,
   };
 };
 

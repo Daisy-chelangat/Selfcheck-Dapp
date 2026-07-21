@@ -47,5 +47,44 @@ export const calculateProgress = (checkInCount, requiredCheckIns) => {
   if (!requiredCheckIns || requiredCheckIns === 0) return 0;
   return Math.min((Number(checkInCount) / Number(requiredCheckIns)) * 100, 100);
 };
+export const getCategoryLabel = (category) => {
+  const categories = [
+    "Learning",
+    "Fitness", 
+    "Health",
+    "Reading",
+    "Finance",
+    "Prayer",
+    "Personal Development",
+    "Other",
+  ];
+  return categories[category] || "Other";
+};
+
+export const calculateStreak = (checkInHistory, frequencySeconds) => {
+  if (!checkInHistory || checkInHistory.length === 0) return 0;
+
+  const sorted = [...checkInHistory]
+    .map(Number)
+    .sort((a, b) => b - a);
+
+  let streak = 1;
+  for (let i = 0; i < sorted.length - 1; i++) {
+    const diff = sorted[i] - sorted[i + 1];
+    const tolerance = frequencySeconds * 1.5;
+    if (diff <= tolerance) {
+      streak++;
+    } else {
+      break;
+    }
+  }
+  return streak;
+};
+
+export const getFrequencySeconds = (frequency) => {
+  if (frequency === 0) return 86400;
+  if (frequency === 1) return 172800;
+  return 604800;
+};
 
 export const SEPOLIA_CHAIN_ID = "0xaa36a7";

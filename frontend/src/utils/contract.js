@@ -1,11 +1,11 @@
-export const CONTRACT_ADDRESS = "0x2057C368aE4b1dF5322b8c0d1cCC53Ad3A0A151B";
+export const CONTRACT_ADDRESS = "0x81b04b97119895dA01064EeD6BEDA6052B9c5F46";
 
 export const CONTRACT_ABI = [
-  "function createSoloGoal(string memory description, uint durationInDays, uint8 frequency) external payable",
+  "function createSoloGoal(string memory description, uint durationInDays, uint8 frequency,uint8 category) external payable",
   "function checkIn(uint goalId) external",
   "function completeGoal(uint goalId) external",
   "function failGoal(uint goalId) external",
-  "function createPartnerGoal(string memory description, uint durationInDays, uint8 frequency, address partner) external payable",
+  "function createPartnerGoal(string memory description, uint durationInDays, uint8 frequency,uint8 category, address partner) external payable",
   "function acceptPartnerGoal(uint partnerGoalId) external payable",
   "function resolvePartnerGoal(uint partnerGoalId) external",
   "function distributePool() external",
@@ -22,6 +22,7 @@ export const CONTRACT_ABI = [
   "function rejectCheckIn(uint goalId) external",
   "function autoApproveCheckIn(uint goalId) external",
   "function getCheckInRequest(uint goalId) external view returns (tuple(uint goalId, address requester, uint timestamp, bool approved, bool rejected, bool pending))",
+  "function getCheckInHistory(uint goalId) external view returns (uint[])",
   "event GoalCreated(uint indexed goalId, address indexed owner, string description, uint stake, uint deadline)",
   "event CheckedIn(uint indexed goalId, address indexed owner, uint timestamp, uint checkInCount)",
   "event GoalCompleted(uint indexed goalId, address indexed owner, uint stakeReturned)",

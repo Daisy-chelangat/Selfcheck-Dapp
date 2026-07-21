@@ -9,6 +9,17 @@ contract SelfCheck {
 
     enum CheckInFrequency { Daily, TwoDays, Weekly }
 
+    enum GoalCategory { 
+        Learning,
+        Fitness,
+        Health,
+        Reading,
+        Finance,
+        Prayer,
+        PersonalDevelopment,
+        Other
+    }
+
     // ─── STRUCTS ──────────────────────────────────────
 
     struct Goal {
@@ -24,6 +35,8 @@ contract SelfCheck {
         CheckInFrequency frequency;
         GoalStatus status;
         bool isPartnerGoal;
+        GoalCategory category;
+        uint[] checkInHistory;
     }
 
     struct PartnerGoal {
@@ -190,7 +203,8 @@ contract SelfCheck {
     function createSoloGoal(
         string memory description,
         uint durationInDays,
-        CheckInFrequency frequency
+        CheckInFrequency frequency ,
+        GoalCategory category
     ) external payable {
         require(msg.value > 0, "Must stake some ETH");
         require(durationInDays > 0, "Duration must be greater than 0");
@@ -218,7 +232,9 @@ contract SelfCheck {
             requiredCheckIns: required,
             frequency: frequency,
             status: GoalStatus.Active,
-            isPartnerGoal: false
+            isPartnerGoal: false,
+            category : category,
+            checkInHistory: new uint[](0)   
         });
 
         userGoals[msg.sender].push(goalCounter);
@@ -274,6 +290,7 @@ contract SelfCheck {
             // solo goal → record immediately
             goal.lastCheckIn = block.timestamp;
             goal.checkInCount++;
+            goal.checkInHistory.push(block.timestamp);
 
             emit CheckedIn(goalId, msg.sender, block.timestamp, goal.checkInCount);
         }
@@ -300,6 +317,7 @@ contract SelfCheck {
 
         goal.lastCheckIn = request.timestamp;
         goal.checkInCount++;
+        goal.checkInHistory.push(request.timestamp);
 
         emit CheckInApproved(goalId, msg.sender, block.timestamp);
         emit CheckedIn(goalId, request.requester, request.timestamp, goal.checkInCount);
@@ -408,6 +426,7 @@ contract SelfCheck {
         string memory description,
         uint durationInDays,
         CheckInFrequency frequency,
+        GoalCategory category,
         address partner
     ) external payable {
         require(msg.value > 0, "Must stake some ETH");
@@ -438,7 +457,9 @@ contract SelfCheck {
             requiredCheckIns: required,
             frequency: frequency,
             status: GoalStatus.Active,
-            isPartnerGoal: true
+            isPartnerGoal: true,
+            category: category,
+            checkInHistory: new uint[](0)
         });
 
         partnerGoals[partnerGoalCounter] = PartnerGoal({
@@ -590,6 +611,9 @@ contract SelfCheck {
 
     function getSuccessCount(address user) external view returns (uint) {
         return successCount[user];
+    }
+    function getCheckInHistory(uint goalId) external view returns (uint[] memory) {
+        return goals[goalId].checkInHistory;
     }
 
 }
